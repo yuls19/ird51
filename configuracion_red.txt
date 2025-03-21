@@ -1,0 +1,202 @@
+# CONFIGURACIÓN DE R1 (ISP)
+
+enable
+configure terminal
+hostname R1
+
+interface GigabitEthernet0/0
+ ip address 50.0.1.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1.20
+ encapsulation dot1Q 20
+ ip address 50.0.2.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1.30
+ encapsulation dot1Q 30
+ ip address 50.0.4.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/2
+ ip address 50.0.3.1 255.255.255.0
+ no shutdown
+
+interface Serial0/3/0
+ ip address 50.0.0.1 255.255.255.252
+ no shutdown
+
+interface Serial0/3/1
+ ip address 50.0.0.10 255.255.255.252
+ no shutdown
+
+router ospf 1
+ network 50.0.0.0 0.0.0.3 area 0
+ network 50.0.0.8 0.0.0.3 area 0
+ network 50.0.2.0 0.0.0.255 area 0
+ network 50.0.4.0 0.0.0.255 area 0
+
+ip dhcp excluded-address 50.0.2.1 50.0.2.10
+ip dhcp excluded-address 50.0.4.1 50.0.4.10
+
+ip dhcp pool VLAN_SOC
+ network 50.0.2.0 255.255.255.0
+ default-router 50.0.2.1
+ dns-server 50.0.1.2
+
+ip dhcp pool VLAN_SISTEMAS
+ network 50.0.4.0 255.255.255.0
+ default-router 50.0.4.1
+ dns-server 50.0.1.2
+
+exit
+write memory
+
+# CONFIGURACIÓN DE R2
+
+enable
+configure terminal
+hostname R2
+
+interface Serial0/3/0
+ ip address 50.0.0.2 255.255.255.252
+ no shutdown
+
+interface Serial0/3/1
+ ip address 50.0.0.5 255.255.255.252
+ no shutdown
+
+router ospf 1
+ network 50.0.0.0 0.0.0.3 area 0
+ network 50.0.0.4 0.0.0.3 area 0
+
+exit
+write memory
+
+# CONFIGURACIÓN DE R3
+
+enable
+configure terminal
+hostname R3
+
+interface GigabitEthernet0/0
+ no ip address
+ no shutdown
+
+interface GigabitEthernet0/0.40
+ encapsulation dot1Q 40
+ ip address 50.0.4.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/0.50
+ encapsulation dot1Q 50
+ ip address 50.0.5.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/0.99
+ encapsulation dot1Q 99
+ ip address 50.0.99.1 255.255.255.0
+ no shutdown
+
+interface Serial0/3/0
+ ip address 50.0.0.9 255.255.255.252
+ no shutdown
+
+interface Serial0/3/1
+ ip address 50.0.0.6 255.255.255.252
+ no shutdown
+
+router ospf 1
+ network 50.0.99.0 0.0.0.255 area 0
+ network 50.0.4.0 0.0.0.255 area 0
+ network 50.0.5.0 0.0.0.255 area 0
+
+exit
+write memory
+
+# CONFIGURACIÓN DE SW1
+
+enable
+configure terminal
+hostname SW1
+
+vlan 20
+ name SOC
+
+vlan 30
+ name SISTEMAS
+
+vlan 99
+ name ADMIN
+
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk allowed vlan all
+ no shutdown
+
+exit
+write memory
+
+# CONFIGURACIÓN DE SW2
+
+enable
+configure terminal
+hostname SW2
+
+vlan 40
+ name PRUEBAS
+
+vlan 99
+ name ADMIN
+
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk allowed vlan all
+ no shutdown
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 40
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 40
+
+interface FastEthernet0/3
+ switchport mode access
+ switchport access vlan 40
+
+exit
+write memory
+
+# CONFIGURACIÓN DE SW3
+
+enable
+configure terminal
+hostname SW3
+
+vlan 50
+ name RH
+
+vlan 99
+ name ADMIN
+
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk allowed vlan all
+ no shutdown
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 50
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 50
+
+interface FastEthernet0/3
+ switchport mode access
+ switchport access vlan 50
+
+exit
+write memory
